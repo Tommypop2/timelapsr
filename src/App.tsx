@@ -95,7 +95,7 @@ const App: Component = () => {
 	);
 	const [timeString] = createResource(currentFrameIndex, async (i) => {
 		const timeStamp = (await frames.get(i))?.timestamp;
-		if(!timeStamp) return "No frames yet";
+		if (!timeStamp) return "No frames yet";
 		return formatTime(timeStamp);
 	});
 	return (

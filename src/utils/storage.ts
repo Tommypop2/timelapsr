@@ -5,7 +5,7 @@ export class StorageHandler {
 		this.directoryHandle = handle;
 	}
 	async writeToFile(name: string, content: ImageData) {
-		if(!this.directoryHandle) await this.init();
+		if (!this.directoryHandle) await this.init();
 		const handle = await this.directoryHandle.getFileHandle(name, {
 			create: true,
 		});
@@ -13,7 +13,7 @@ export class StorageHandler {
 		await writable.write(content.data);
 	}
 	async readFile(name: string) {
-		if(!this.directoryHandle) await this.init();
+		if (!this.directoryHandle) await this.init();
 		const handle = await this.directoryHandle.getFileHandle(name);
 		const file = await handle.getFile();
 		const contents = await file.arrayBuffer();
