@@ -6,6 +6,7 @@ import {
 	onCleanup,
 	createSignal,
 	on,
+	createMemo,
 } from "solid-js";
 import { Frames } from "../utils/frames";
 // The time (in ms) between each frame
@@ -17,14 +18,14 @@ const formatTime = (time: number) => {
 	const dateStr = date.toDateString();
 	return `${dateStr} ${timeStr}`;
 };
-export const Timelapser: Component = () => {
+export const Timelapser: Component<{ frames: Frames }> = (props) => {
 	// Canvas used for rendering content for the user
 	let displayCanvas: HTMLCanvasElement | undefined;
 	// Used for getting image data from the video
 	const processingCanvas = document.createElement("canvas");
 
 	const videoElement: HTMLVideoElement = document.createElement("video");
-	const frames = new Frames();
+	const frames = props.frames;
 	const [currentFrameIndex, setCurrentFrameIndex] = createSignal(0);
 	const [framesExist, setFramesExist] = createSignal(false);
 	// Set up video element
@@ -70,38 +71,31 @@ export const Timelapser: Component = () => {
 		}, SAMPLEINTERVAL);
 		onCleanup(() => clearInterval(interval));
 	});
+	const [currentFrameTimestamp, setCurrentFrameTimestamp] =
+		createSignal<number>();
 	// Playing back captured frames as a timelapse
 	createEffect(() => {
 		if (!framesExist()) return;
 		const ctx = displayCanvas?.getContext("2d");
-		const interval = setInterval(() => {
+		const interval = setInterval(async () => {
 			if (!ctx || !frames.frames.length) return;
-			// Loop index back to 0 when we reach the end of the frames array
-			let tmp = currentFrameIndex();
-			if (tmp + 1 >= frames.frames.length) tmp = -1;
-			setCurrentFrameIndex(tmp + 1);
-		}, PLAYBACKINTERVAL);
-		onCleanup(() => clearInterval(interval));
-	});
-	createEffect(
-		on(currentFrameIndex, async (i) => {
-			const frame = await frames.get(i);
-			const ctx = displayCanvas?.getContext("2d");
-			if (!frame || !ctx) return;
+			const frame = await frames.next();
+			queueMicrotask(() => setCurrentFrameTimestamp(frame.timestamp));
 			ctx.beginPath();
 			ctx.clearRect(0, 0, frame.img.width, frame.img.height);
 			ctx.putImageData(frame.img, 0, 0);
-		})
-	);
-	const [timeString] = createResource(currentFrameIndex, async (i) => {
-		const timeStamp = (await frames.get(i))?.timestamp;
+		}, PLAYBACKINTERVAL);
+		onCleanup(() => clearInterval(interval));
+	});
+	const timeString = createMemo((i) => {
+		const timeStamp = currentFrameTimestamp();
 		if (!timeStamp) return "No frames yet";
 		return formatTime(timeStamp);
 	});
 	return (
 		<Suspense>
 			<div class="absolute">
-				<div class="fixed top-8 right-8 text-xl">Date: {timeString.latest}</div>
+				<div class="fixed top-8 right-8 text-xl">Date: {timeString()}</div>
 				<canvas ref={displayCanvas}></canvas>
 			</div>
 		</Suspense>

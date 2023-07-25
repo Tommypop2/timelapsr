@@ -5,7 +5,7 @@ export class StorageHandler {
 		this.directoryHandle = handle;
 	}
 	async writeToFile(name: string, content: ImageData) {
-		if (!this.directoryHandle) await this.init();
+		// if (!this.directoryHandle) await this.init();
 		// const handle = await this.directoryHandle.getFileHandle(name, {
 		// 	create: true,
 		// });
