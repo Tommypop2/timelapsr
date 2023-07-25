@@ -12,7 +12,9 @@ export class StorageHandler {
 		await writable.close();
 	}
 	async readFile(name: string) {
-		const handle = await this.directoryHandle.getFileHandle(name);
+		const handle = await this.directoryHandle.getFileHandle(name, {
+			create: false,
+		});
 		const file = await handle.getFile();
 		const contents = await file.arrayBuffer();
 		return contents;
