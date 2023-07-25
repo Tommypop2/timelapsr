@@ -3,18 +3,21 @@ import { Timelapser } from "./Components/Timelapser";
 import { Frames } from "./utils/frames";
 const App: Component = () => {
 	const [canStart, setCanStart] = createSignal(false);
-	const frames = new Frames();
+	let frames: Frames | null = null;
 	return (
 		<>
 			<Show when={!canStart()}>
 				<button
-					onClick={() => {
+					onClick={async () => {
+						// @ts-ignore
+						const dirHandle = await window.showDirectoryPicker();
+						frames = new Frames(dirHandle);
 						setCanStart(true);
 					}}
 				></button>
 			</Show>
-			<Show when={canStart()}>
-				<Timelapser frames={frames} />
+			<Show when={canStart() && frames}>
+				<Timelapser frames={frames!} />
 			</Show>
 		</>
 	);

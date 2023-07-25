@@ -9,13 +9,9 @@ export class Frames {
 	// The current timelapse frames
 	frames: { img: ImageData; timestamp: number }[] = [];
 	storageHandler: StorageHandler;
-	constructor() {
-		this.storageHandler = new StorageHandler();
+	constructor(handle: FileSystemDirectoryHandle) {
+		this.storageHandler = new StorageHandler(handle);
 	}
-	// async get(index: number) {
-	// 	const realIndex = index - this.indexOffset;
-	// 	return this.frames[realIndex];
-	// }
 	async next() {
 		this.memoryIndex++;
 		if (this.memoryIndex >= this.frames.length) {
@@ -26,5 +22,6 @@ export class Frames {
 	}
 	addFrame(img: ImageData) {
 		this.frames.push({ img, timestamp: Date.now() });
+		this.storageHandler.writeToFile(`${this.frames.length - 1}`, img);
 	}
 }
