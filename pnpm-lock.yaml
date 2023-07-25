@@ -13,6 +13,9 @@ dependencies:
     version: 0.53.6(postcss@8.4.24)(vite@4.3.9)
 
 devDependencies:
+  '@types/wicg-file-system-access':
+    specifier: ^2020.9.6
+    version: 2020.9.6
   solid-devtools:
     specifier: ^0.27.3
     version: 0.27.3(solid-js@1.7.6)(vite@4.3.9)
@@ -853,6 +856,10 @@ packages:
   /@types/estree@1.0.1:
     resolution: {integrity: sha512-LG4opVs2ANWZ1TJoKc937iMmNstM/d0ae1vNbnBvBhqCSezgVUOzcLCqbI5elV8Vy6WKwKjaqR+zO9VKirBBCA==}
     dev: false
+
+  /@types/wicg-file-system-access@2020.9.6:
+    resolution: {integrity: sha512-6hogE75Hl2Ov/jgp8ZhDaGmIF/q3J07GtXf8nCJCwKTHq7971po5+DId7grft09zG7plBwpF6ZU0yx9Du4/e1A==}
+    dev: true
 
   /@unocss/astro@0.53.6(vite@4.3.9):
     resolution: {integrity: sha512-RA0H8iujvMhH7ga6RWOzzdtNRP8qB++1eu7ffajJTktih6xYXh1I5lRR9uYajW2riShhtMQ7FXLRnlEIa1Vwog==}

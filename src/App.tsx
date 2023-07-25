@@ -3,11 +3,11 @@ import {
 	createResource,
 	Suspense,
 	createEffect,
-	onMount,
 	onCleanup,
 	createSignal,
 	on,
 } from "solid-js";
+import { Frames } from "./utils/frames";
 // The time (in ms) between each frame
 const SAMPLEINTERVAL = 1000;
 const PLAYBACKINTERVAL = 100;
@@ -24,8 +24,7 @@ const App: Component = () => {
 	const processingCanvas = document.createElement("canvas");
 
 	const videoElement: HTMLVideoElement = document.createElement("video");
-	// The current timelapse frames
-	const frames: { img: ImageData; timestamp: number }[] = [];
+	const frames = new Frames();
 	const [currentFrameIndex, setCurrentFrameIndex] = createSignal(0);
 	const [framesExist, setFramesExist] = createSignal(false);
 	// Set up video element
@@ -66,7 +65,7 @@ const App: Component = () => {
 				videoElement.height
 			);
 			if (!imgData) return;
-			frames.push({ img: imgData, timestamp: Date.now() });
+			frames.addFrame(imgData);
 			setFramesExist(true);
 		}, SAMPLEINTERVAL);
 		onCleanup(() => clearInterval(interval));
@@ -76,17 +75,17 @@ const App: Component = () => {
 		if (!framesExist()) return;
 		const ctx = displayCanvas?.getContext("2d");
 		const interval = setInterval(() => {
-			if (!ctx || !frames.length) return;
+			if (!ctx || !frames.frames.length) return;
 			// Loop index back to 0 when we reach the end of the frames array
 			let tmp = currentFrameIndex();
-			if (tmp + 1 >= frames.length) tmp = -1;
+			if (tmp + 1 >= frames.frames.length) tmp = -1;
 			setCurrentFrameIndex(tmp + 1);
 		}, PLAYBACKINTERVAL);
 		onCleanup(() => clearInterval(interval));
 	});
 	createEffect(
-		on(currentFrameIndex, (i) => {
-			const frame = frames[i];
+		on(currentFrameIndex, async (i) => {
+			const frame = await frames.get(i);
 			const ctx = displayCanvas?.getContext("2d");
 			if (!frame || !ctx) return;
 			ctx.beginPath();
@@ -94,12 +93,15 @@ const App: Component = () => {
 			ctx.putImageData(frame.img, 0, 0);
 		})
 	);
+	const [timeString] = createResource(currentFrameIndex, async (i) => {
+		const timeStamp = (await frames.get(i))?.timestamp;
+		if(!timeStamp) return "No frames yet";
+		return formatTime(timeStamp);
+	});
 	return (
 		<Suspense>
 			<div class="absolute">
-				<div class="fixed top-8 right-8 text-xl">
-					Date: {formatTime(frames[currentFrameIndex()]?.timestamp)}
-				</div>
+				<div class="fixed top-8 right-8 text-xl">Date: {timeString.latest}</div>
 				<canvas ref={displayCanvas}></canvas>
 			</div>
 		</Suspense>
