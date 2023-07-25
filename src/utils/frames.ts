@@ -22,26 +22,36 @@ export class Frames {
 					timestamp: Date.now(),
 				},
 			];
+			console.log("Setting frames 0");
 		}
-		if (realIndex >= this.frames.length) {
-			// We're trying to access further than we've got in memory
-			let fileContents: ArrayBuffer;
-			try {
-				fileContents = await this.storageHandler.readFile(index.toString());
-			} catch (e) {
-				return;
-			}
-			this.frames = [
-				{
-					img: new ImageData(new Uint8ClampedArray(fileContents), 1920, 1080),
-					timestamp: Date.now(),
-				},
-			];
-			this.indexOffset = index;
-		}
+		// if (realIndex >= this.frames.length) {
+		// 	// We're trying to access further than we've got in memory
+		// 	let fileContents: ArrayBuffer;
+		// 	try {
+		// 		fileContents = await this.storageHandler.readFile(index.toString());
+		// 	} catch {
+		// 		// We don't have this frame yet
+		// 		return;
+		// 	}
+		// 	console.log("Setting frames");
+		// 	this.frames = [
+		// 		{
+		// 			img: new ImageData(new Uint8ClampedArray(fileContents), 1920, 1080),
+		// 			timestamp: Date.now(),
+		// 		},
+		// 	];
+		// 	this.indexOffset = index;
+		// }
 		return this.frames[realIndex];
 	}
 	addFrame(img: ImageData) {
+		const index = this.frames.length + this.indexOffset;
+		console.log(index);
 		this.frames.push({ img, timestamp: Date.now() });
+		// Serialize frame
+		this.storageHandler.writeToFile(index.toString(), img);
+		console.log("Written to", index.toString());
+		// this.indexOffset++;
+		// this.frames.shift();
 	}
 }
